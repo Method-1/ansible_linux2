@@ -1,0 +1,9 @@
+- name: Configuring ssh login on db
+  hosts: dbserver
+  become: yes
+  tasks:
+          - name: Set Authorized key
+            authorized_key:
+                    user: sqladmin
+                    state: present
+                    key: https://github.com/Method-1.keys

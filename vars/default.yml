@@ -1,0 +1,6 @@
+mysql_root_password: "adi123"
+app_user: "adi91"
+http_host: "News_Website"
+http_conf: "News_Website.conf"
+http_port: "80"
+disable_default: true

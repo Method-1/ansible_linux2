@@ -1,0 +1,15 @@
+- hosts: dbserver
+  become: yes
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+
+       - name: Adds test user to database
+         mysql_user:
+           name: admin
+           password: 'losen1'
+           priv: 'newsdb.*:ALL'
+           state: present
+           login_user: root
+           login_password: "{{ mysql_root_password }}"

@@ -1,0 +1,139 @@
+- hosts: webserver
+  become: yes
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+
+  #Apache Configuration
+    - name: Install LAMP Packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2', 'python3-pymysql', 'php', 'php-mysql', 'libapache2-mod-php' ]
+
+    - name: Create document root
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Set up Apache virtualhost
+      template:
+        src: "files/apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+      notify: Reload Apache
+
+    - name: Enable new site
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+      notify: Reload Apache
+
+    - name: Disable default Apache site
+      shell: /usr/sbin/a2dissite 000-default.conf
+      when: disable_default
+      notify: Reload Apache
+      
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+
+  # Tasks for database-server
+
+- hosts: dbserver
+  become: yes
+  vars_files:
+    - vars/default.yml
+
+  tasks:  
+
+    # Installing MySQL + PyMySQL
+    - name: Install MySQL and PyMySQL
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'mysql-server','python3-pymysql' ]
+
+    # Check if mysql service is running
+    - name: Make sure mysql service is running
+      service:
+         name: mysql
+         state: started
+         enabled: True
+
+    # MySQL Configuration
+    - name: Sets the root password
+      mysql_user:
+        login_host: 'localhost'
+        login_user: 'root'
+        login_password: "{{ mysql_root_password }}"
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Removes all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Removes the MySQL test database
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Create a new database named newsdb
+      mysql_db:
+        name: newsdb
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+
+      # get db script
+    - name: Download dbscript with wget
+      command: wget https://raw.githubusercontent.com/Method-1/News_Website/master/Database/newsdb.sql
+
+# Tasks for webserver
+- hosts: webserver
+  become: yes
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+
+  # UFW Configuration
+    - name: "UFW - Allow HTTP on port {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+
+  # Git clone application to directory
+    - name: Clone a repo to dest/dir
+      ansible.builtin.git:
+        repo: https://github.com/Method-1/News_Website.git
+        dest: "/var/www/{{ http_host }}"
+
+  # change home.php to index.php 
+    - name: Copy home.php to index.php
+      command: mv /var/www/{{ http_host }}/home.php /var/www/{{ http_host }}/index.php
+
+  # delete file that was copied (home.php)
+    - name: Remove file home.php (delete file)
+      ansible.builtin.file:
+        path: "/var/www/{{ http_host }}/home.php"
+        state: absent
+
+  # Delete database folder for security reasons
+    - name: Delete database directory
+      ansible.builtin.file:
+        path: "/var/www/{{ http_host }}/Database*"
+        state: absent

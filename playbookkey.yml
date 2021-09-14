@@ -1,0 +1,9 @@
+- name: Configuring ssh login on hosts
+  hosts: all
+  become: yes
+  tasks:
+          - name: Set Authorized key
+            authorized_key:
+                    user: adi91
+                    state: present
+                    key: https://github.com/Method-1.keys
