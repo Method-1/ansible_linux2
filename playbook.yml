@@ -54,7 +54,7 @@
 
     # Installing MySQL + PyMySQL
     - name: Install MySQL and PyMySQL
-      apt: name={{ item }} update_cache=yes state=latest
+      apt: name={{ item }} state=latest
       loop: [ 'mysql-server','python3-pymysql' ]
 
     # Check if mysql service is running
@@ -81,21 +81,23 @@
         state: absent
         login_user: root
         login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
 
     - name: Removes the MySQL test database
       mysql_db:
+        login_user: 'root'
+        login_password: "{{ mysql_root_password }}"
         name: test
         state: absent
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+   
     - name: Create a new database named newsdb
       mysql_db:
         name: newsdb
         state: present
         login_user: root
         login_password: "{{ mysql_root_password }}"
-
+        login_unix_socket: /var/run/mysqld/mysqld.sock
 
       # get db script
     - name: Download dbscript with wget

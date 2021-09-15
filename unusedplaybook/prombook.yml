@@ -1,0 +1,9 @@
+- hosts: dbserver
+  become: yes
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+
+    - name: Download dbscript with wget
+      command: wget https://github.com/prometheus/mysqld_exporter/releases/download/v0.13.0/mysqld_exporter-0.13.0.linux-amd64.tar.gz
