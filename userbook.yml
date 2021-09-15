@@ -5,11 +5,9 @@
 
   tasks:
 
-       - name: Adds test user to database
-         mysql_user:
-           name: admin
-           password: 'losen1'
-           priv: 'newsdb.*:ALL'
-           state: present
-           login_user: root
-           login_password: "{{ mysql_root_password }}"
+       - name: Saving random test file to /home/adi91/backup
+         fetch:
+                 src: /var/log/syslog
+                 dest: /home/adi91/backup/databaselogs/
+                 flat: yes
+         

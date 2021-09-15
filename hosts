@@ -46,13 +46,13 @@
 master1 ansible_ssh_port=5901 ansible_ssh_host=31.208.245.56
 
 [webserver]
-webserver1 ansible_ssh_port=6102 ansible_ssh_host=31.208.245.56
+webserver1 ansible_ssh_port=22 ansible_ssh_host=192.168.1.25
 
 [dbserver]
-database1 ansible_ssh_port=6101 ansible_ssh_host=31.208.245.56
+database1 ansible_ssh_port=22 ansible_ssh_host=192.168.1.22
 
-[development]
-develop1 ansible_ssh_port=6103 ansible_ssh_host=31.208.245.56
+#[development]
+#develop1 ansible_ssh_port=6103 ansible_ssh_host=31.208.245.56
 
-[monitoring]
-monitoring1 ansible_ssh_port=6100 ansible_ssh_host=31.208.245.56
+#[monitoring]
+#monitoring1 ansible_ssh_port=6100 ansible_ssh_host=31.208.245.56
